@@ -14,9 +14,16 @@ cp ../HW1_VJA.docx .    # copy homework from desktop (one level up) to current d
 git add HW1_VJA.docx    # adding hw1 to 'staging area', not yet committed
 git commit -m "Submitting hw1 to github" #committing and commenting on addition
 
-# create corresponding folder on github webpage
-# use code and url provided to connect the two 
+### create corresponding folder on github webpage
+### use code and url provided to connect the two 
 git remote add origin https://github.com/valaasam/DataScience2022.git 
+git push -u origin main
+
+
+### commit and push HW2 writeup
+nano HW2_VJA.docx  # added this file and saved it
+git add HW2_VJA.docx
+git commit -m "Adding HW2 text file - writeup"
 git push -u origin main
 
 
