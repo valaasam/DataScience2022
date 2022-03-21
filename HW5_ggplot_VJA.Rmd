@@ -1,0 +1,243 @@
+---
+title: "Homework5-DataVis-ggplot"
+author: "Valentina"
+date: 'DUE: Thursday, March 10'
+output:
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#### Necessary items:
+- **libraries:** tidyverse, ggsci, ggforce, patchwork, Hmisc
+- **files:** bloom_df.csv, hw_task2_blank.png
+
+Within RStudio you can directly edit these blocks of code and turn in your homework that way with your code and figures printed.   
+I **HIGHLY** recommend getting your code to work in a normal R script then just copy and pasting the final code over to this document
+
+**First: import libraries, set your working directory, and read in bloom_df**  
+```{r init, message=FALSE, warning=FALSE}
+library(tidyverse) 
+library(ggforce) 
+library(ggsci)
+library(patchwork)
+library(Hmisc)
+library(readr)
+
+setwd('~/Desktop/JulieMA/Part.4.DataVisualization/') 
+
+bloom_df <- read.csv("bloom_df.csv")
+```
+
+### bloom_df contents
+- **taxa:** genus_species
+- **genus** 
+- **species** 
+- **logbodysize** 
+- **trophic_position**
+- **reg:** diadromous or non-diadromous
+
+Let's take a peak and look at the structure
+```{r bloom_df}
+bloom_df[1:5,]
+str(bloom_df)
+```
+
+### Graphical tasks
+
+This next tasks are going to ask you to make a series of figures. For each one, I would like you to make all of them *look good*. Change the theme around, change the axis labels, etc. Additionally, each of these will use the **reg** column which has 2 factors. Change the color and/or shape of them both. 
+
+### Task 1: Continuous vs. continuous plot
+
+Create two scatterplots of logbodysize vs. trophic_position grouped by reg
+
+##### First plot: 
+- a 2 trend lines (method = 'lm'), one for each reg variable
+
+```{r 1.1}
+
+ggplot(data=bloom_df, aes(x=logbodysize,y=trophic_position, fill=reg)) +
+  geom_point(aes(shape=reg, fill=reg), size=4)+  #add pch=21 if removing shape_manual
+  stat_smooth(method='lm', linetype='dashed', size=1, fullrange=T, color="black")+
+  scale_fill_manual(name='Reg', values=c('lightblue','black')) + 
+  scale_shape_manual(values=c(1,2), guide='none') +
+  scale_color_manual(values=c("#999999","#56B4E9")) +
+ # scale_color_manual(name='Reg', values=c('lightblue','black'))+ #to use this, remove 'color=black' from stat_smooth
+  #scale_y_continuous(name='Trophic Position',limits=c(0,1), breaks=c(0,0.5,1.0)) #change yaxis scale
+  theme_classic() + 
+  theme(legend.position = 'right', 
+      #  plot.title = element_text(size = 20, colour="black",face = "bold"),
+        axis.text = element_text(size=13),
+        axis.title = element_text(size = 16, colour="black",face = "bold"),
+      #  panel.border = element_rect(size = 1.5, colour = "black"),
+        legend.title = element_text(size = 16, colour="black",face = "bold",vjust = 1),
+        legend.text = element_text(size=13),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank())
+
+
+#### I cant figure out how to fill points, and/or change shapes in legend
+
+
+
+```
+
+##### Second plot 
+- a single trend line for the whole model
+
+```{r 1.2}
+ggplot(data=bloom_df, aes(x=logbodysize,y=trophic_position)) +
+  geom_point(aes(shape=reg), size=4)+  #add pch=21 if removing shape_manual
+  stat_smooth(method='lm', linetype='dashed', size=1, fullrange=T, color="black")+
+# scale_fill_manual(name='Reg', values=c('lightblue', 'black')) + 
+  scale_shape_manual(name='Reg', values=c(1,2)) +
+#  scale_color_manual(values=c("#999999","#56B4E9")) +
+ # scale_color_manual(name='Reg', values=c('lightblue','black'))+ #to use this, remove 'color=black' from stat_smooth
+  #scale_y_continuous(name='Trophic Position',limits=c(0,1), breaks=c(0,0.5,1.0)) #change yaxis scale
+  theme_classic() + 
+  theme(legend.position = 'right', 
+      #  plot.title = element_text(size = 20, colour="black",face = "bold"),
+        axis.text = element_text(size=13),
+        axis.title = element_text(size = 16, colour="black",face = "bold"),
+      #  panel.border = element_rect(size = 1.5, colour = "black"),
+        legend.title = element_text(size = 16, colour="black",face = "bold",vjust = 1),
+        legend.text = element_text(size=13),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank())
+```
+
+### Task 2: Continuous vs. categorical
+
+##### The layout will be: 
+- 2 panels: trophic_position and logbodysize  
+- x axis: reg  
+- y axis: value of trophic_position and logbodysize  
+
+##### Create 4 plots:  
+- bar and error bars (mean and 95% conf. int.)  
+- point and error bars (mean and 95% conf. int.)  
+- box plots  
+- raw data + point and error bars (mean and 95% conf. int.)  
+
+All these plots should have the same general layout but change the type of plot to visualize the data. 
+
+**HINT:** logbodysize and trophic_position need to be turned into long format  
+
+
+### make data long ###
+
+bodysize_df <- bloom_df %>%
+  group_by(reg) %>%
+  summarise(mean = mean(logbodysize, na.rm = TRUE), #logbodysize mean
+            sd = sd(logbodysize, na.rm = TRUE), #logbodysize standard deviation
+            n = n()) %>% #logbodysize count
+  mutate(se = sd / sqrt(n), #logbodysize standard error
+         ci = 1.96 * se) #logbodysize 95% confidence interval
+bodysize_df$var <- 'Body Size (log)'
+
+trophicpos_df <- bloom_df %>%
+  group_by(reg) %>%
+  summarise(mean = mean(trophic_position, na.rm = TRUE), #trophic_position mean
+            sd = sd(trophic_position, na.rm = TRUE), #trophic_position standard deviation
+            n = n()) %>% #trophic_position count
+  mutate(se = sd / sqrt(n), #trophic_position standard error
+         ci = 1.96*se) #trophic_position 95% confidence interval
+trophicpos_df$var <- 'Trophic Position'
+
+summary_df <- rbind(bodysize_df,trophicpos_df)
+summary_df
+
+##### Example layout:   
+![sample layout for task2](hw_task2_blank.png){width=50%}
+
+```{r 2.1}
+#plot 2.1 bar and error bars
+
+ggplot(data=summary_df,aes(x=reg,y=mean,fill=var)) +
+  facet_wrap(~var,nrow=1,scales = 'free') + 
+  geom_bar(stat='identity', width=.3, size=.7) +
+  geom_errorbar(aes(ymin = mean - ci, ymax = mean + ci), width=.1) + 
+  scale_fill_manual(values = c("lightblue", "darkgrey")) + 
+  ylab("Mean") +
+  theme_bw() +
+  theme(
+    legend.title = element_blank(),
+    legend.position = "none",
+    axis.title.x = element_blank(),
+    axis.title.y = element_text(size=10),
+    axis.text.x = element_text(size=10),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    
+    )
+  
+
+```
+
+```{r 2.2}
+#plot 2.2 point and error bars
+
+ggplot(data=summary_df,aes(x=reg,y=mean,fill=var)) +
+  facet_wrap(~var,nrow=1,scales = 'free') + 
+  geom_point(pch=21, stat='identity', size=4) +
+  geom_errorbar(aes(ymin = mean - ci, ymax = mean + ci), width=.1) + 
+  scale_fill_manual(values = c("lightblue", "darkgrey")) + 
+  ylab("Mean") +
+  theme_bw() +
+  theme(
+    legend.title = element_blank(),
+    legend.position = "none",
+    axis.title.x = element_blank(),
+    axis.title.y = element_text(size=10),
+    axis.text.x = element_text(size=10),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    
+    )
+```
+
+```{r 2.3}
+#plot 2.3 box plots
+
+ggplot(data=summary_df,aes(x=reg,y=mean,fill=var)) +
+  facet_wrap(~var,nrow=1,scales = 'free') + 
+  geom_boxplot()+
+  scale_fill_manual(values = c("lightblue", "darkgrey")) + 
+  ylab("Mean") +
+  theme_bw() +
+  theme(
+    legend.title = element_blank(),
+    legend.position = "none",
+    axis.title.x = element_blank(),
+    axis.title.y = element_text(size=10),
+    axis.text.x = element_text(size=10),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    
+    )
+```
+
+```{r 2.4}
+#plot 2.4 raw data plus points and error bars
+```
+
+### Task 3: layering your plots
+
+Make any two figures with the bloom_df! Can be something we've done or something completely different. Make one TERRIBLE figure and one GREAT figure.
+
+Put them together using *patchwork* or *ggarrange* 
+
+
+```{r 3}
+#plot 3
+```
+
+### Bonus: make a map (not required)  
+
+In the github for this course, there is an Rmarkdown called *ggmap_ex*. You can use this as a reference to make a map using any data you want. Try using your own data so it is useful.  
+
+```{r bonus}
+#bonus map
+```
