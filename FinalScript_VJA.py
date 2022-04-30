@@ -12,10 +12,12 @@
 #!/usr/bin/env python3
 
 import os
+import os.path
 import glob
 import numpy as np
 import pandas as pd
 from datetime import datetime
+from pathlib import Path
 
 #create path for outfile
 outdir_path = input("type path for OUTPUT directory, no quotes (hint: /Users/val/Desktop/hop_data/hopdata_cleaned): ")
@@ -25,7 +27,7 @@ print("Directory for output is set up!")
 
                      
 # Set up for big loop                     
-path = input("type path for INPUT directory, no quotes (hint: /Users/val/Desktop/hop_data/july_samples): "
+path = input("type path for INPUT directory, no quotes (hint: /Users/val/Desktop/hop_data/july_samples): ")
 folder = os.fsencode(path)
 all_files = glob.glob(os.path.join(path, "*.txt"))
 
@@ -36,7 +38,7 @@ print("files completed:0 ")
 
 for file in all_files:
     # Read in file
-    df_test=pd.read_csv(file, header=None, sep='\t')
+    df=pd.read_csv(file, header=None, sep='\t')
              
     # Remove last column, which is all NAs
     df = df.dropna(axis=1, how='all')   
